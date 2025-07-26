@@ -1,0 +1,151 @@
+---
+title: "EPI 569 FINAL PROJECT"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+install.packages("readr")
+library(readr)
+```
+
+```{r}
+EPI569_data <- readRDS("/Users/ataka/Downloads/rff_2024.rds")
+
+head(EPI569_data)
+str(EPI569_data)
+
+EPI569_data1 <- readRDS("/Users/ataka/Downloads/roster_2024.rds")
+head(EPI569_data1)
+
+EPI569_data2 <- readRDS("/Users/ataka/Downloads/transmission_pairs_2024.rds")
+head(EPI569_data2)
+```
+
+```{r}
+# Load necessary packages
+library(ggplot2)
+library(dplyr)
+
+# Ensure Date_of_Onset is in Date format
+EPI569_data$Date_of_Onset <- as.Date(EPI569_data$Date_of_Onset)
+
+# Calculate daily count of cases
+daily_cases <- EPI569_data %>%
+  filter(!is.na(Date_of_Onset)) %>%
+  group_by(Date_of_Onset) %>%
+  summarise(Number_of_Cases = n())
+
+# Plot the histogram with an added line for trend
+ggplot(EPI569_data, aes(x = Date_of_Onset)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  geom_line(data = daily_cases, aes(x = Date_of_Onset, y = Number_of_Cases), color = "darkblue", size = 1) +  # Adding line for trend
+  labs(
+    title = "Histogram of Cases by Day of Onset",
+    x = "Date of Onset",
+    y = "Number of Cases"
+  ) +
+  theme_minimal() +
+  scale_x_date(date_breaks = "1 day", date_labels = "%Y-%m-%d") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Convert Date_of_Onset to Date format if not already done
+EPI569_data$Date_of_Onset <- as.Date(EPI569_data$Date_of_Onset)
+
+# Calculate the daily count of cases
+daily_cases <- EPI569_data %>%
+  filter(!is.na(Date_of_Onset)) %>%
+  group_by(Date_of_Onset) %>%
+  summarise(Number_of_Cases = n())
+
+# Plot the epi curve for cases by day, with both bars and line
+ggplot(daily_cases, aes(x = Date_of_Onset, y = Number_of_Cases)) +
+  geom_col(fill = "skyblue") +
+  geom_line(color = "darkblue", size = 1) +  # Adding the line to show trend
+  labs(
+    title = "Epidemic Curve of Cases by Date of Onset",
+    x = "Date of Onset",
+    y = "Number of Cases"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+# Assuming your dataset is stored in `data`
+
+# 1. Plot the number of Susceptible, Infectious, and Recovered by day
+# Create a long dataset for easier plotting
+data_status <- EPI569_data %>%
+  mutate(
+    Status = case_when(
+      Date_of_Onset > Date_of_Recovery ~ "Recovered",
+      !is.na(Date_of_Onset) & Date_of_Onset <= Date_of_Recovery ~ "Infectious",
+      TRUE ~ "Susceptible"
+    )
+  ) %>%
+  group_by(Date_of_Onset, Status) %>%
+  summarize(Count = n(), .groups = "drop")
+
+# Creating the Epi Curve data
+epi_data <- data_status %>%
+  filter(Status == "Infectious") %>%
+  group_by(Date_of_Onset) %>%
+  summarize(New_Cases = sum(Count), .groups = "drop")
+
+# Plotting
+ggplot(data_status, aes(x = Date_of_Onset, y = Count, color = Status, group = Status)) +
+  geom_line(linewidth = 1) + # Updated to use `linewidth` instead of `size`
+  geom_bar(data = epi_data, aes(x = Date_of_Onset, y = New_Cases), 
+           stat = "identity", inherit.aes = FALSE, fill = "lightblue", alpha = 0.6) + # Epi curve
+  scale_color_manual(
+    values = c("Infectious" = "red", "Susceptible" = "blue", "Recovered" = "green"),
+    name = "Status"
+  ) + # Custom colors for better distinction
+  labs(
+    title = "Epidemiological Trends Over Time",
+    subtitle = "Number of Susceptible, Infectious, and Recovered Individuals with Epi Curve",
+    x = "Date",
+    y = "Number of Individuals"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 10),
+    axis.text.x = element_text(angle = 45, hjust = 1) # Rotate date labels for clarity
+  )
+
+# 2. Draw an Epidemic Curve (Epi Curve)
+# Count cases by date of onset
+epi_curve <- EPI569_data %>%
+  filter(!is.na(Date_of_Onset)) %>%
+  group_by(Date_of_Onset) %>%
+  summarize(Cases = n(), .groups = "drop")
+
+# Plot the Epi Curve
+ggplot(epi_curve, aes(x = Date_of_Onset, y = Cases)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Epidemic Curve",
+       x = "Date of Symptom Onset",
+       y = "Number of Cases") +
+  theme_minimal()
+
+
+```
