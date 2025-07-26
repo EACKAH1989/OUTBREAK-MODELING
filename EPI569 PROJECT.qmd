@@ -24,7 +24,7 @@ head(EPI569_data2)
 ```
 
 ```{r}
-# Load necessary packages
+
 library(ggplot2)
 library(dplyr)
 
@@ -54,11 +54,11 @@ ggplot(EPI569_data, aes(x = Date_of_Onset)) +
 ```
 
 ```{r}
-# Load necessary libraries
+
 library(ggplot2)
 library(dplyr)
 
-# Convert Date_of_Onset to Date format if not already done
+
 EPI569_data$Date_of_Onset <- as.Date(EPI569_data$Date_of_Onset)
 
 # Calculate the daily count of cases
@@ -82,12 +82,12 @@ ggplot(daily_cases, aes(x = Date_of_Onset, y = Number_of_Cases)) +
 ```
 
 ```{r}
-# Load necessary libraries
+
 library(dplyr)
 library(ggplot2)
 library(lubridate)
 
-# Assuming your dataset is stored in `data`
+
 
 # 1. Plot the number of Susceptible, Infectious, and Recovered by day
 # Create a long dataset for easier plotting
